@@ -23,6 +23,10 @@ js = json.loads(data)
 print json.dumps(js, indent=4)
 
 threatList = []
+# TODO Replace the threatList above with the
+# threatDict below which will enable you to capture
+# both affected as well as criticality.
+#threatDict = {}
 count = 0
 
 #To do, we wish to pull out the criticality of the patch as well as the system affected
@@ -31,15 +35,33 @@ for record in js["getmspatchday"]:
     threatList.insert(count, threat)
     ++count
 
+# TODO the code below populates the threatDict variable with
+# Key Value pairs representing the affected application and 
+# criticallity respectively.
+#for record in js["getmspatchday"]:
+#    affected = record["affected"]
+#    crticiality = record["crticiality"]
+#    threatDict[str(affected)] = str(crticiality)
+#    ++count
+
 #print threatList
 try:
     conn = sqlite3.connect('asset_base2.sqlite')
     cur = conn.cursor()
 except:
     print "error"
+
 # Need to create another data structure which results can be appended to.
 # This will enable us to index the results in a batch oriented fashion.
 for threat in threatList:
+
+# Consider the following code, this will pull out the 
+# affected application as one element of the list of
+# dictionary keys, this basically does the same as we
+# did previously with the threatList however it now also
+# enables us to retain and utilize the criticality of each
+# application vulnerability.
+#for threat in list(tel.keys()):
     result = cur.execute("SELECT * FROM database_servers WHERE InstalledApplications='%s' UNION ALL "
                          "SELECT * FROM email_servers WHERE InstalledApplications='%s' UNION ALL "
                          "SELECT * FROM dev_servers WHERE InstalledApplications='%s' UNION ALL "
