@@ -103,3 +103,4 @@ client = Elasticsearch(hosts=['localhost:9200'])
 bulk = BulkClient(client)
 bulk.index(index='threatelligence', doc_type='system_threat',
            body=dict(key1='val1'))
+resp = bulk.execute()
