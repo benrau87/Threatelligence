@@ -31,8 +31,7 @@ import sqlite3
 import urllib
 import json
 import datetime
-from elasticsearch import Elasticsearch
-import hashlib
+from elasticsearch import Elasticsearch,helpers
 
 # Obtaining the date enables dynamic date variable 
 # substitution whenever the script is run.
@@ -72,8 +71,7 @@ print patchDict
 conn = sqlite3.connect('asset_base2.sqlite')
 cur = conn.cursor()
 
-# Create a dictionary to populate with threats (keys) and thier severity (values)
-threatDict = {}
+listOfThreats = []
 
 # Need to create another data structure which results can be appended to.
 # This will enable us to index the results in a batch oriented fashion.
@@ -88,19 +86,45 @@ for patch in patchDict:
                          "SELECT * FROM huxley WHERE InstalledApplications='%s' UNION ALL "
                          "SELECT * FROM pas WHERE InstalledApplications = '%s'"
                          % (patch, patch, patch, patch, patch, patch, patch, patch))
-        print result.fetchall()
-        threatDict[str(result.fetchall())] = str(patchDict[patch])
+        affectedSystem = []
+        for system in result.fetchall():
+            affectedSystem = (unicode(patch),unicode(patchDict[patch]),) + system
+            listOfThreats.append(affectedSystem)
     except sqlite3.Error as e:
         print "An error occurred whilst querying the asset database:", e.args[0]
-
-print threatDict
+print listOfThreats
 # Close connection to asset database
 conn.close()
 
-# Now lets persist each key,value pair in the threatDict 
-# into ElasticSearch by default we connect to localhost:9200
-client = Elasticsearch(hosts=['localhost:9200'])
-bulk = BulkClient(client)
-bulk.index(index='threatelligence', doc_type='system_threat',
-           body=dict(key1='val1'))
-resp = bulk.execute()
+# We'll now build up a Python dictionary of our data set in a format that the 
+# Python ES client can use. We are going to load the data by means of bulk 
+# indexing. According to the Elasticsearch Bulk API docs, the body of the bulk 
+# index request must consist of two lines for each operation: one specifying the 
+# meta-data for the operation; and one specifying the actual data that it will 
+# index. The code below will build a dictionary that meets these requirements 
+# for our data:
+
+bulk_data = [] 
+systemList = ['Patch','Severity','Name','DeviceType','InstalledApplictions','ApplicationVersion',
+              'Description','OperatingSystem','OperatingSystemVersion','Groups']
+for threat in listOfThreats:
+    data_dict = {}
+    count = 0
+    for item in threat:
+        data_dict[unicode(systemList[count])] = item
+        count += 1
+    op_dict = {
+        "index": {
+            "_index": 'threatelligence', 
+            "_type": 'VulnerableSystem', 
+            #"_id": data_dict[ID_FIELD]
+        }
+    }
+    bulk_data.append(op_dict)
+    bulk_data.append(data_dict)
+
+# Let's create our index using the Python ES client.
+# By default we assume the aserver is running on http://localhost:9200
+es = Elasticsearch(hosts=['localhost:9200'])
+# bulk index the data
+res = es.bulk(index = 'threatelligence', body = bulk_data, refresh = True)
