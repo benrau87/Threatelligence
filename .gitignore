@@ -28,3 +28,4 @@ build
 target
 dist
 lib
+.pydevproject
