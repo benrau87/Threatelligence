@@ -41,8 +41,8 @@ from elasticsearch import Elasticsearch,helpers
 # invoke it only on the second Tuesday of each month hence
 # guaranteeing the dates match perfectly.
 
-#i = datetime.datetime.now()
-#fHand = urllib.urlopen("http://isc.sans.edu/api/getmspatchday/%s-%s-%s?json" % (i.year, i.month, i.day))
+# i = datetime.datetime.now()
+# fHand = urllib.urlopen("http://isc.sans.edu/api/getmspatchday/%s-%s-%s?json" % (i.year, i.month, i.day))
 fHand = urllib.urlopen('http://isc.sans.edu/api/getmspatchday/2016-01-12?json')
 
 print fHand.getcode()
@@ -50,8 +50,6 @@ print fHand.getcode()
 data = fHand.read()
 
 js = json.loads(data)
-
-print json.dumps(js, indent=4)
 
 # The patchDict below will enable us to capture both 
 # affected system(s) as well as the severity of each threat
@@ -75,6 +73,9 @@ listOfThreats = []
 
 # Need to create another data structure which results can be appended to.
 # This will enable us to index the results in a batch oriented fashion.
+# Currently task of searching through dictionary looks only for exact matches against a
+# given asset within the database. No fuzzy searches are carried out. This is a possible
+# future improvement to the application.
 for patch in patchDict:
     try:
         result = cur.execute("SELECT * FROM database_servers WHERE InstalledApplications='%s' UNION ALL "
