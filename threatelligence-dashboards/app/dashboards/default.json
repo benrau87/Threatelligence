@@ -175,64 +175,64 @@
       ],
       "notice": false
     },
-    {
-      "title": "Internal Threats Search Results",
-      "height": "550px",
-      "editable": true,
-      "collapse": true,
-      "collapsable": true,
-      "panels": [
-        {
-          "error": false,
-          "span": 12,
-          "editable": true,
-          "type": "table",
-          "loadingEditor": false,
-          "size": 100,
-          "pages": 5,
-          "offset": 0,
-          "sort": [
-            "_score",
-            "desc"
-          ],
-          "overflow": "min-height",
-          "fields": [
-            "Patch",
-            "Severity",
-            "Name",
-            "DeviceType",
-            "InstalledApplictions",
-            "ApplicationVersion",
-            "Description",
-            "OperatingSystem",
-            "OperatingSystemVersion",
-            "Groups"
-          ],
-          "highlight": [],
-          "sortable": true,
-          "header": true,
-          "paging": true,
-          "field_list": false,
-          "all_fields": false,
-          "trimFactor": 300,
-          "localTime": false,
-          "timeField": "@timestamp",
-          "spyable": true,
-          "queries": {
-            "mode": "all",
-            "ids": [
-              0
-            ]
-          },
-          "style": {
-            "font-size": "9pt"
-          },
-          "normTimes": true,
-          "title": "Internal Threats Search Results"
-        }
-      ],
-      "notice": false
-    },
+    // {
+    //   "title": "Internal Threats Search Results",
+    //   "height": "550px",
+    //   "editable": true,
+    //   "collapse": true,
+    //   "collapsable": true,
+    //   "panels": [
+    //     {
+    //       "error": false,
+    //       "span": 12,
+    //       "editable": true,
+    //       "type": "table",
+    //       "loadingEditor": false,
+    //       "size": 100,
+    //       "pages": 5,
+    //       "offset": 0,
+    //       "sort": [
+    //         "_score",
+    //         "desc"
+    //       ],
+    //       "overflow": "min-height",
+    //       "fields": [
+    //         "Patch",
+    //         "Severity",
+    //         "Name",
+    //         "DeviceType",
+    //         "InstalledApplictions",
+    //         "ApplicationVersion",
+    //         "Description",
+    //         "OperatingSystem",
+    //         "OperatingSystemVersion",
+    //         "Groups"
+    //       ],
+    //       "highlight": [],
+    //       "sortable": true,
+    //       "header": true,
+    //       "paging": true,
+    //       "field_list": false,
+    //       "all_fields": false,
+    //       "trimFactor": 300,
+    //       "localTime": false,
+    //       "timeField": "@timestamp",
+    //       "spyable": true,
+    //       "queries": {
+    //         "mode": "all",
+    //         "ids": [
+    //           0
+    //         ]
+    //       },
+    //       "style": {
+    //         "font-size": "9pt"
+    //       },
+    //       "normTimes": true,
+    //       "title": "Internal Threats Search Results"
+    //     }
+    //   ],
+    //   "notice": false
+    // },
     {
       "title": "Search Results",
       "height": "550px",
@@ -287,7 +287,7 @@
         }
       ],
       "notice": false
-    },
+    }
   ],
   "editable": true,
   "failover": false,
