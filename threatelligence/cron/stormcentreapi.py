@@ -26,6 +26,11 @@ Finally, it is assumed that Elasticsearch is available at
 http://127.0.0.1:9200 such that affected systems and the 
 severity of the threat can be written into records for display
 in Kibana.
+
+The crontab below defines this script to run at 1am on the 2nd tuesday of every month.
+10 18 8-14 * 2 /usr/bin/python /path/to/stormcentreapi.py
+For other examples of how to reference a cron job use this link:
+https://github.com/gfunkoriginal/Threatelligence/blob/master/Install.md#cron
 '''
 import sqlite3
 import urllib
