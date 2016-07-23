@@ -1,21 +1,34 @@
+# Threatelligence
 
-## Threatelligence v0.1
+<img src="https://github.com/gfunkoriginal/Threatelligence/docs/logo.png" align="right" width="300" />
 
-Threatelligence is a simple project I created to start learning Python which lead me to Elasticsearch and Kibana. I was playing around with some really great open source intelligence frameworks, namely collective-Intelligence Framework (CIF, you can find it on Github). After playing around I figured I wanted to do something similar except make it will be simpler and add some eye-candy to it.
+# Introduction
 
-Threatelligence fetches cyber threat intelligence data from various sources available on the Interwebs and feeds the data into Elasticsearch while slightly enriching it. The dashboards which are built using Kibana are used to display data and make searching through the data extremely easy.
+Threatelligence fetches cyber threat intelligence data from various sources, exposing threats through a search engine. The software provides a variety of dashboards (built using [Kibana](https://www.elastic.co/products/kibana)) used to display data and make searching through security vulnerability data extremely easy.
 
-![World Map Threat Dashboard](http://4.bp.blogspot.com/-vrDNfe3_JP8/U43KMZ3okII/AAAAAAAAAPU/E6j_KBUdLYM/s1600/Screen+Shot+2014-06-03+at+3.14.24+PM.png)
+The project codebase was originally cloned from [syphon1c/Threatelligence](https://github.com/syphon1c/Threatelligence). Kudos!
 
+The [original author](https://github.com/syphon1c) of some of this code has made made it very easy to add your own custom feeds to Threatelligence, automate the fetching of data and removing old data. For more information please see [Customer Feeds](./Customfeeds.md). You should be able to add all kinds of data (whatever you determine as intelligence) to the underlying index and then display it in the dashboards.
+The codebase has been customized however to accomodate specific security notification and requirements.
 
-I have made made it very easy to add your own custom feeds to Threatelligence, automate the fetching of data and removing old data, see the Customfeeds.md. You should be able to add all kinds of data (whatever you determine as intelligence) to Elasticsearch and then display in the dashboards.
+# Acknowledgements and Insiptation
 
-![Custom Feeds](http://1.bp.blogspot.com/-LD4fczfrQ8A/U43MO2W_GwI/AAAAAAAAAPo/U9Qq2t-x8kA/s1600/Screen+Shot+2014-06-03+at+3.23.03+PM.png)
+The project was originally cloned from [syphon1c/Threatelligence](https://github.com/syphon1c/Threatelligence). Many aspetcs of the code have been edited over time. In order to see a full breakdown of changes consult the [project differential](https://github.com/syphon1c/Threatelligence/compare/master...gfunkoriginal:master).
+All additional code present within this codebase is provided by Graeme James McGibbney as per the following permissive, open source license.
 
-
-
-Blog entry about it:
-
-http://infosecscapes.blogspot.com/2014/06/threatelligence.html
-
+```
+#Copyright 2016 Graeme James McGibbney
+#
+#Licensed under the Apache License, Version 2.0 (the "License");
+#you may not use this file except in compliance with the License.
+#You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+#Unless required by applicable law or agreed to in writing, software
+#distributed under the License is distributed on an "AS IS" BASIS,
+#WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#See the License for the specific language governing permissions and
+#limitations under the License.
+```
 
