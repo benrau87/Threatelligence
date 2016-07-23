@@ -1,6 +1,6 @@
 # Threatelligence
 
-<img src="https://github.com/gfunkoriginal/Threatelligence/docs/logo.png" align="right" width="300" />
+<img src="./docs/logo.png" align="right" width="300" />
 
 # Introduction
 
