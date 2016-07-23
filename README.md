@@ -15,7 +15,7 @@ The codebase has been customized however to accomodate specific security notific
 
 See the [Installation Guide](./Install.md).
 
-# Acknowledgements and Insiptation
+# Acknowledgements and Inspiration
 
 The project was originally cloned from [syphon1c/Threatelligence](https://github.com/syphon1c/Threatelligence). Many aspetcs of the code have been edited over time. In order to see a full breakdown of changes consult the [project differential](https://github.com/syphon1c/Threatelligence/compare/master...gfunkoriginal:master).
 All additional code present within this codebase is provided by Graeme James McGibbney as per the following permissive, open source license.
