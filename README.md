@@ -8,8 +8,12 @@ Threatelligence fetches cyber threat intelligence data from various sources, exp
 
 The project codebase was originally cloned from [syphon1c/Threatelligence](https://github.com/syphon1c/Threatelligence). Kudos!
 
-The [original author](https://github.com/syphon1c) of some of this code has made made it very easy to add your own custom feeds to Threatelligence, automate the fetching of data and removing old data. For more information please see [Customer Feeds](./Customfeeds.md). You should be able to add all kinds of data (whatever you determine as intelligence) to the underlying index and then display it in the dashboards.
+The [original author](https://github.com/syphon1c) of some of this code has made made it very easy to add your own custom feeds to Threatelligence, automate the fetching of data and removing old data. For more information please see [Customer Feeds](./CustomFeeds.md). You should be able to add all kinds of data (whatever you determine as intelligence) to the underlying index and then display it in the dashboards.
 The codebase has been customized however to accomodate specific security notification and requirements.
+
+# Installation
+
+See the [Installatiom Guide](./Install.md).
 
 # Acknowledgements and Insiptation
 
