@@ -13,7 +13,7 @@ The codebase has been customized however to accomodate specific security notific
 
 # Installation
 
-See the [Installatiom Guide](./Install.md).
+See the [Installation Guide](./Install.md).
 
 # Acknowledgements and Insiptation
 
