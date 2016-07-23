@@ -41,14 +41,14 @@ dnsResponseCodes = ['NOERROR','FORMERR','SERVFAIL','NXDOMAIN','NOTIMP','REFUSED'
 
 fhand = open('test.txt')
 
-#The dnsList will capture all parese vlaues from the txt file, these list valeus will then be stored in dnsDict
+# The dnsList will capture all parsed values from the txt file, these list values will then be stored in dnsDict
 
 dnsList = []
 dnsDict = {}
 
 iD = 0
 
-# for loop interates through the dns txt file selecting lines containing the dns response code 'NO ERROR'
+# for loop iterates through the dns txt file selecting lines containing the dns response code 'NO ERROR'
 # Each data element will go through a normalisation process to ensure that the format is consistent with
 # the data stored in the dnscoll.sqlite.
 
@@ -62,11 +62,11 @@ for line in fhand:
         newData = data.replace('(', '.')
         dns = newData.translate(None, "()123456789")
         #dnsList = [unicode(date),unicode(time),unicode(dns)]
-        dnsList = [date, time, dns]
+        dnsList = [date, time, str(dns)]
         dnsDict[iD] = dnsList
         iD += 1
 
-print dnsDict
+#print dnsDict
 
 # Connect to dnscoll.sqlite this database contains a list of domiains known to propogate malware or spyware
 
@@ -75,9 +75,16 @@ cur = conn.cursor()
 
 for dnsListKey,dnsListValue in dnsDict.iteritems():
     try:
-        result = cur.execute("SELECT * FROM Collect WHERE domain = '%s'" % unicode(dnsListValue[2]))
+        result = cur.execute('SELECT * FROM Collect WHERE malware_domain = "%s"' % str([dnsListValue[2]]))
+        #result = cur.execute("SELECT * FROM Collect")
         print result.fetchall()
     except sqlite3.Error as e:
         print "An error occurred whilst querying the DNS collection database:", e.args[0]
 
 listOfThreats = []
+
+# Let's create our index using the Python ES client.
+# By default we assume the aserver is running on http://localhost:9200
+#es = Elasticsearch(hosts=['localhost:9200'])
+# bulk index the data
+#res = es.bulk(index = 'threatelligence', body = bulk_data, refresh = True)
