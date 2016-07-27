@@ -75,8 +75,7 @@ cur = conn.cursor()
 
 for dnsListKey,dnsListValue in dnsDict.iteritems():
     try:
-        result = cur.execute('SELECT * FROM Collect WHERE malware_domain = "%s"' % str([dnsListValue[2]]))
-        #result = cur.execute("SELECT * FROM Collect")
+        result = cur.execute("SELECT * FROM collect WHERE malware_domain = '%s'" % [dnsListValue[2]])
         print result.fetchall()
     except sqlite3.Error as e:
         print "An error occurred whilst querying the DNS collection database:", e.args[0]
