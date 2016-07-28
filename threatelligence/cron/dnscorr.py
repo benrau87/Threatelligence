@@ -33,6 +33,7 @@ in Kibana.
 '''
 import sqlite3
 from elasticsearch import Elasticsearch,helpers
+from urlparse import urlparse
 
 #Create an array of possible DNS return codes to indicate whtether the DNS query has been successful or resulte in an error
 #https://support.opendns.com/entries/60827730-FAQ-What-are-common-DNS-return-or-response-codes-
@@ -63,27 +64,56 @@ for line in fhand:
         dns = newData.translate(None, "()123456789")
         #dnsList = [unicode(date),unicode(time),unicode(dns)]
         dnsList = [date, time, str(dns)]
-        dnsDict[iD] = dnsList
+        dnsDict[str(dns)] = dnsList
         iD += 1
 
-#print dnsDict
-
 # Connect to dnscoll.sqlite this database contains a list of domiains known to propogate malware or spyware
-
 conn = sqlite3.connect('dnscoll.sqlite')
 cur = conn.cursor()
-
+dnsCorrellations = []
+count = 0
 for dnsListKey,dnsListValue in dnsDict.iteritems():
     try:
-        result = cur.execute("SELECT * FROM collect WHERE malware_domain = '%s'" % [dnsListValue[2]])
-        print result.fetchall()
+        domain = urlparse(str('http://') + dnsListValue[2])
+        result = cur.execute("SELECT * FROM collect WHERE malware_domain LIKE '%s'" % domain.netloc)
+        for match in result.fetchall():
+            m = match[0]
+            if m in dnsDict.keys():
+                tTuple = (m, dnsDict[match[0]],)
+                dnsCorrellations.append(tTuple)
+
     except sqlite3.Error as e:
         print "An error occurred whilst querying the DNS collection database:", e.args[0]
+conn.close()
 
-listOfThreats = []
+# We'll now build up a Python dictionary of our data set in a format that the
+# Python ES client can use. We are going to load the data by means of bulk
+# indexing. According to the Elasticsearch Bulk API docs, the body of the bulk
+# index request must consist of two lines for each operation: one specifying the
+# meta-data for the operation; and one specifying the actual data that it will
+# index. The code below will build a dictionary that meets these requirements
+# for our data:
+
+bulk_data = []
+systemList = ['Date','Time','DNS']
+for dns in dnsCorrellations:
+    data_dict = {}
+    count = 0
+    for item in dns[1]:
+        data_dict[unicode(systemList[count])] = dns[1][count]
+        count += 1
+    op_dict = {
+        "index": {
+            "_index": 'threatelligence',
+            "_type": 'MalwareDNS',
+            #"_id": data_dict[ID_FIELD]
+        }
+    }
+    bulk_data.append(op_dict)
+    bulk_data.append(data_dict)
 
 # Let's create our index using the Python ES client.
 # By default we assume the aserver is running on http://localhost:9200
-#es = Elasticsearch(hosts=['localhost:9200'])
+es = Elasticsearch(hosts=['localhost:9200'])
 # bulk index the data
-#res = es.bulk(index = 'threatelligence', body = bulk_data, refresh = True)
+res = es.bulk(index = 'threatelligence', body = bulk_data, refresh = True)
