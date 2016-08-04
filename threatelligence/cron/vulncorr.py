@@ -28,7 +28,7 @@ severity of the threat can be written into records for display
 in Kibana.
 
 The crontab below defines this script to run at 1am on the 2nd tuesday of every month.
-10 18 8-14 * 2 /usr/bin/python /path/to/stormcentreapi.py
+10 18 8-14 * 2 /usr/bin/python /path/to/vulncorr.py
 For other examples of how to reference a cron job use this link:
 https://github.com/gfunkoriginal/Threatelligence/blob/master/Install.md#cron
 '''
@@ -36,7 +36,9 @@ import sqlite3
 import urllib
 import json
 import datetime
+import smtplib
 from elasticsearch import Elasticsearch,helpers
+import time
 
 # Obtaining the date enables dynamic date variable 
 # substitution whenever the script is run.
@@ -46,11 +48,23 @@ from elasticsearch import Elasticsearch,helpers
 # invoke it only on the second Tuesday of each month hence
 # guaranteeing the dates match perfectly.
 
+time1 = time.time()
+sender = 'threatelligence@gmail.com'
+
+receivers = ['g.j.mcgibbney@2015.ljmu.ac.uk']
+
+message = """ From: From ThreatIntel <test@gmail.com>
+To: To InformationSecurity <g.j.mcgibbney@2015.ljmu.ac.uk>
+Subject: SMTP email test
+
+A new vulnerability correlation have been identified. Please review the Kibana dashboard for more information.
+"""
+
 # i = datetime.datetime.now()
 # fHand = urllib.urlopen("http://isc.sans.edu/api/getmspatchday/%s-%s-%s?json" % (i.year, i.month, i.day))
 fHand = urllib.urlopen('http://isc.sans.edu/api/getmspatchday/2016-01-12?json')
 
-print fHand.getcode()
+print(fHand.getcode())
 
 data = fHand.read()
 
@@ -68,7 +82,7 @@ for record in js["getmspatchday"]:
     severity = record["severity"]
     patchDict[str(affected)] = str(severity)
 
-print patchDict
+print(patchDict)
 
 # Make connection to internal asset database
 conn = sqlite3.connect('asset_base2.sqlite')
@@ -94,11 +108,11 @@ for patch in patchDict:
                          % (patch, patch, patch, patch, patch, patch, patch, patch))
         affectedSystem = []
         for system in result.fetchall():
-            affectedSystem = (unicode(patch),unicode(patchDict[patch]),) + system
+            affectedSystem = (patch, patchDict[patch],) + system
             listOfThreats.append(affectedSystem)
     except sqlite3.Error as e:
-        print "An error occurred whilst querying the asset database:", e.args[0]
-print listOfThreats
+        print("An error occurred whilst querying the asset database:", e.args[0])
+print(listOfThreats)
 # Close connection to asset database
 conn.close()
 
@@ -117,7 +131,7 @@ for threat in listOfThreats:
     data_dict = {}
     count = 0
     for item in threat:
-        data_dict[unicode(systemList[count])] = item
+        data_dict[systemList[count]] = item
         count += 1
     op_dict = {
         "index": {
@@ -134,3 +148,5 @@ for threat in listOfThreats:
 es = Elasticsearch(hosts=['localhost:9200'])
 # bulk index the data
 res = es.bulk(index = 'threatelligence', body = bulk_data, refresh = True)
+time2 = time.time()
+print("Time elapsed: " (str(time2 - time1)))
