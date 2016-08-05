@@ -32,12 +32,14 @@ severity of the threat can be written into records for display
 in Kibana.
 '''
 import sqlite3
-from elasticsearch import Elasticsearch,helpers
-from urlparse import urlparse
+import time
+from intelnotification import IntelNotify
+from elasticsearch import Elasticsearch
+from  urllib.parse import urlparse
 
+time1 = time.time()
 #Create an array of possible DNS return codes to indicate whtether the DNS query has been successful or resulte in an error
 #https://support.opendns.com/entries/60827730-FAQ-What-are-common-DNS-return-or-response-codes-
-
 dnsResponseCodes = ['NOERROR','FORMERR','SERVFAIL','NXDOMAIN','NOTIMP','REFUSED','YXDOMAIN','XRRSET','NOTAUTH','NOTZONE']
 
 fhand = open('test.txt')
@@ -62,7 +64,6 @@ for line in fhand:
         data = data.strip(')(1234567890')
         newData = data.replace('(', '.')
         dns = newData.translate(None, "()123456789")
-        #dnsList = [unicode(date),unicode(time),unicode(dns)]
         dnsList = [date, time, str(dns)]
         dnsDict[str(dns)] = dnsList
         iD += 1
@@ -83,7 +84,7 @@ for dnsListKey,dnsListValue in dnsDict.iteritems():
                 dnsCorrellations.append(tTuple)
 
     except sqlite3.Error as e:
-        print "An error occurred whilst querying the DNS collection database:", e.args[0]
+        print("An error occurred whilst querying the DNS collection database:", e.args[0])
 conn.close()
 
 # We'll now build up a Python dictionary of our data set in a format that the
@@ -100,13 +101,12 @@ for dns in dnsCorrellations:
     data_dict = {}
     count = 0
     for item in dns[1]:
-        data_dict[unicode(systemList[count])] = dns[1][count]
+        data_dict[systemList[count]] = dns[1][count]
         count += 1
     op_dict = {
         "index": {
             "_index": 'threatelligence',
             "_type": 'MalwareDNS',
-            #"_id": data_dict[ID_FIELD]
         }
     }
     bulk_data.append(op_dict)
@@ -116,4 +116,9 @@ for dns in dnsCorrellations:
 # By default we assume the aserver is running on http://localhost:9200
 es = Elasticsearch(hosts=['localhost:9200'])
 # bulk index the data
-res = es.bulk(index = 'threatelligence', body = bulk_data, refresh = True)
+res = es.bulk(index = 'threatelligence', body=bulk_data, refresh = True)
+time2 = time.time()
+
+# sends email notification
+email = IntelNotify()
+email.send_mail(len(dnsCorrellations),(str(time2 - time1)))

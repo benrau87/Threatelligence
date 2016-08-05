@@ -33,12 +33,12 @@ For other examples of how to reference a cron job use this link:
 https://github.com/gfunkoriginal/Threatelligence/blob/master/Install.md#cron
 '''
 import sqlite3
-import urllib
+import urllib.request
 import json
 import datetime
-import smtplib
-from elasticsearch import Elasticsearch,helpers
+from elasticsearch import Elasticsearch
 import time
+from intelnotification import IntelNotify
 
 # Obtaining the date enables dynamic date variable 
 # substitution whenever the script is run.
@@ -47,27 +47,14 @@ import time
 # as the script is being run as a cron job, we can simply
 # invoke it only on the second Tuesday of each month hence
 # guaranteeing the dates match perfectly.
-
+indexName = 'threatelligence'
 time1 = time.time()
-sender = 'threatelligence@gmail.com'
-
-receivers = ['g.j.mcgibbney@2015.ljmu.ac.uk']
-
-message = """ From: From ThreatIntel <test@gmail.com>
-To: To InformationSecurity <g.j.mcgibbney@2015.ljmu.ac.uk>
-Subject: SMTP email test
-
-A new vulnerability correlation have been identified. Please review the Kibana dashboard for more information.
-"""
 
 # i = datetime.datetime.now()
 # fHand = urllib.urlopen("http://isc.sans.edu/api/getmspatchday/%s-%s-%s?json" % (i.year, i.month, i.day))
-fHand = urllib.urlopen('http://isc.sans.edu/api/getmspatchday/2016-01-12?json')
+fHand = urllib.request.urlopen('http://isc.sans.edu/api/getmspatchday/2016-01-12?json')
 
-print(fHand.getcode())
-
-data = fHand.read()
-
+data = fHand.read().decode('utf-8')
 js = json.loads(data)
 
 # The patchDict below will enable us to capture both 
@@ -135,9 +122,8 @@ for threat in listOfThreats:
         count += 1
     op_dict = {
         "index": {
-            "_index": 'threatelligence', 
-            "_type": 'VulnerableSystem', 
-            #"_id": data_dict[ID_FIELD]
+            "_index": indexName,
+            "_type": 'VulnerableSystem',
         }
     }
     bulk_data.append(op_dict)
@@ -147,6 +133,9 @@ for threat in listOfThreats:
 # By default we assume the aserver is running on http://localhost:9200
 es = Elasticsearch(hosts=['localhost:9200'])
 # bulk index the data
-res = es.bulk(index = 'threatelligence', body = bulk_data, refresh = True)
+res = es.bulk(index = indexName, body = bulk_data, refresh = True)
 time2 = time.time()
-print("Time elapsed: " (str(time2 - time1)))
+
+# sends email notification
+email = IntelNotify()
+email.send_mail(len(listOfThreats),(str(time2 - time1)))

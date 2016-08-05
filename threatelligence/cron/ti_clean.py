@@ -7,7 +7,7 @@
 # License:     GNU/GPL
 ##
 import os
-import ConfigParser
+import configparser
 import argparse
 from datetime import date, timedelta
 import urllib
@@ -15,10 +15,10 @@ import glob
 import socket
 import subprocess
 
-Config = ConfigParser.ConfigParser()
+Config = configparser.ConfigParser()
 Config.read("/opt/threatelligence/threatelligence.ini")
 
-print "Going to clean old data from elasticsearch"
+print("Going to clean old data from elasticsearch")
 
 days = Config.get('DataStorage','daystokeepdata')
 daystokeep = int(days)
@@ -27,13 +27,11 @@ removedate =str(removedate)
 esUrl = "http://localhost:9200/threatelligence/_query?q=date:"+removedate
 proc = subprocess.Popen(["curl", "-XDELETE", esUrl], stdout=subprocess.PIPE)
 (out, err) = proc.communicate()
-print "Done!"
+print("Done!")
 
-print "Deleting old _tmp files!"
+print("Deleting old _tmp files!")
 directory='/tmp/'
 os.chdir(directory)
 files=glob.glob('*_tmp')
 for filename in files:
     os.unlink(filename)
-
-

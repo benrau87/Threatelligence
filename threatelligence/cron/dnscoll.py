@@ -31,9 +31,8 @@ CREATE TABLE Collect (domain TEXT)''')
 count = 0
 fhand = urllib.urlopen('http://malwaredomains.lehigh.edu/files/justdomains')
 for line in fhand:
-    #print line.strip()
     count = count + 1
     cur.execute('''INSERT INTO Collect (domain) VALUES (?) ''', (line, ))
 
 conn.commit()
-print count
+print(count)

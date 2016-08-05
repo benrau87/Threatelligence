@@ -18,14 +18,14 @@ def get_filepaths(directory):
 
     return file_paths  
 
-print "Starting cronjob fetching data!"
+print("Starting cronjob fetching data!")
 full_file_paths = get_filepaths("/opt/threatelligence/etc/")
 
 for f in full_file_paths:
 
   if f.endswith(".ini"):
-     print "starting with: " + f
+     print("starting with: " + f)
      inifile = f
      runfetch = "/usr/bin/python /opt/threatelligence/bin/ti_fetcher.py -i " + inifile
      subprocess.call(runfetch, shell=True)
-     print "finished processing: " + f
+     print("finished processing: " + f)

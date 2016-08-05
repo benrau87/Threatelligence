@@ -87,44 +87,8 @@ connmmdb = pypyodbc.connect('Driver={SQL Server};'
                             'Server= localhost;'
                             'Database=Email_Archive;'
                             'uid=sa;pwd=P@ssw0rd')
-'''
-Select MD.MessageIdentity as [Email Identity],
-CS.CorrespondentAddress as [Sender Address],
-MD.TimeSent as [Time Email Sent],
-MD.TimeReceived as [Time Email Received],
-SD.SubjectText as [Email Subject],
-CR.CorrespondentAddress as [Recipient Address],
-CR.CorrespondentName as [Recipient Name],
-MBD.BodyText as [Raw Email Body Text (Including Subject + Headers)]
-From MessageBodyDetails MBD
-Inner Join MessageDetails MD on MBD.BodyIdentity = MD.BodyIdentity
-Inner Join MessageRecipients MR on MD.MessageIdentity = MR.MessageIdentity
-Inner Join SubjectDetails SD on MD.SubjectIdentity = SD.SubjectIdentity
-Inner Join CorrespondentDetails CS on MR.SenderIdentity = CS.CorrespondentIdentity
-Inner Join CorrespondentDetails CR on MR.RecipientIdentity = CR.CorrespondentIdentity
-Where MBD.BodyText Like '%test%'
-Order By MD.TimeReceived Desc
-'''
 
 
-# Draft of stored procedure that needs to be used for passing the variable into the mailmeter database.
-'''
-USE <<name of the mailmeter database>>
-GO
-
-CREATE PROC spPhishEmail (@PhishUrl AS TEXT)
-AS
-BEGIN
-    SELECT
-        <<email address>>
-        ,<<time email received>>
-    FROM
-        <<name of table>>
-    WHERE
-        table_name.the_date > DATE_SUB(CURDATE(), INTERVAL 1 DAY) AND
-        <<body of email column >> LIKE '%' + @PhishUrl + '%'
-
-END
 '''
 # We'll now build up a Python dictionary of our data set in a format that the
 # Python ES client can use. We are going to load the data by means of bulk
