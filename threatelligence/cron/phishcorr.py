@@ -47,10 +47,10 @@ try:
         count += 1
 # phishList.append(cur.fetchall())
 except sqlite3.Error as e:
-    print "An error occurred whilst accessing phishcoll.sqlite database:", e.args[0]
+    print("An error occurred whilst accessing phishcoll.sqlite database:", e.args[0])
 phishconn.close()
 
-print phishDict
+print(phishDict)
 
 emailconn = sqlite3.connect('GMData.sqlite')
 
@@ -65,7 +65,8 @@ for phishAttempt in phishDict:
             SenderAddress FROM Email WHERE CONTAINS(EmailBodyText,'"%s" OR "%s"')''',
 
         )
-
+    except:
+        print("error could not connect to database")
 for phishAttempt in phishList:
     try:
         cur.execute (
@@ -74,22 +75,15 @@ for phishAttempt in phishList:
             CR.CorrespondentName as [Recipient Name]
             FROM MessageBodyDetails MBD WHERE CONTAINS(MBD.BodyText,'"%s" OR "%s"')''',
             phishAttempt[count][0], phishAttempt[count][1])
-        for phishHit in connmmdb.fetchall():
+        for phishHit in sqlite3.fetchall():
             combinedPhish = (phishAttempt[count][0], phishAttempt[count][1],) + phishHit
             hitsList.append(combinedPhish)
             count += 1
-    except connmmdb.Error as e:
-        print "An error occurred whilst accessing phishcoll.sqlite database:", e.args[0]
-connmmdb.close()
-# Parameter inputs need to be provided by the DBA's to connect to the
-# mailmeter database: https available
-connmmdb = pypyodbc.connect('Driver={SQL Server};'
-                            'Server= localhost;'
-                            'Database=Email_Archive;'
-                            'uid=sa;pwd=P@ssw0rd')
+    except sqlite3.Error as e:
+        print("An error occurred whilst accessing phishcoll.sqlite database:", e.args[0])
+sqlite3.close()
 
 
-'''
 # We'll now build up a Python dictionary of our data set in a format that the
 # Python ES client can use. We are going to load the data by means of bulk
 # indexing. According to the Elasticsearch Bulk API docs, the body of the bulk
@@ -104,7 +98,7 @@ for hit in hitsList:
     data_dict = {}
     count = 0
     for item in hit:
-        data_dict[unicode(targetList[count])] = item
+        data_dict[(targetList[count])] = item
         count += 1
     op_dict = {
         "index": {
