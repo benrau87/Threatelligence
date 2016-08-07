@@ -65,11 +65,12 @@ patchDict = {}
 # representing the affected application and severity of 
 # patch respectively.
 for record in js["getmspatchday"]:
+    patchID = record["id"]
     affected = record["affected"]
     severity = record["severity"]
-    patchDict[str(affected)] = str(severity)
+    patchDict[str,(patchID), str(affected)] = str(severity)
 
-print(patchDict)
+print("Patch Dict: ", patchDict)
 
 # Make connection to internal asset database
 conn = sqlite3.connect('asset_base2.sqlite')
