@@ -68,8 +68,8 @@ for record in js["getmspatchday"]:
     patchID = record["id"]
     affected = record["affected"]
     severity = record["severity"]
-    patchDict[str,(patchID), str(affected)] = str(severity)
-
+#    patchDict[str(affected)] = str(patchID), str(severity)
+    patchDict[str(affected)] = str(severity)
 print("Patch Dict: ", patchDict)
 
 # Make connection to internal asset database
@@ -100,7 +100,7 @@ for patch in patchDict:
             listOfThreats.append(affectedSystem)
     except sqlite3.Error as e:
         print("An error occurred whilst querying the asset database:", e.args[0])
-print(listOfThreats)
+print("List of threats: ",listOfThreats)
 # Close connection to asset database
 conn.close()
 
@@ -113,7 +113,7 @@ conn.close()
 # for our data:
 
 bulk_data = [] 
-systemList = ['Patch','Severity','Name','DeviceType','InstalledApplictions','ApplicationVersion',
+systemList = ['PatchID','Severity','Name','DeviceType','InstalledApplictions','ApplicationVersion',
               'Description','OperatingSystem','OperatingSystemVersion','Groups']
 for threat in listOfThreats:
     data_dict = {}

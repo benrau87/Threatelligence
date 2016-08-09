@@ -31,8 +31,32 @@ http://127.0.0.1:9200 such that affected systems and the
 severity of the threat can be written into records for display
 in Kibana.
 '''
+def chunk2ip(chunk):
+    ret=''
+    bracketmode=False
+    for c in chunk:
+        if bracketmode:
+            if c != ')':
+                pass #dispose char
+            else:
+                if len(ret)>0:
+                    ret += '.'
+                bracketmode=False
+        else:
+            if c != '(':
+                ret+=c
+            else:
+                bracketmode=True
+    return  ret[:len(ret)-1]
+
+print(chunk2ip('(3)www(6)amazon(2)co(2)uk(0)'))
+
+
+
+
 import sqlite3
 import time
+import string
 from intelnotification import IntelNotify
 from elasticsearch import Elasticsearch
 from  urllib.parse import urlparse
@@ -63,7 +87,18 @@ for line in fhand:
         data = line[181:]
         data = data.strip(')(1234567890')
         newData = data.replace('(', '.')
-        dns = newData.translate(None, "()123456789")
+        newData = newData.replace(')', '')
+        newData = newData.replace('0', '')
+        newData = newData.replace('1', '')
+        newData = newData.replace('2', '')
+        newData = newData.replace('3', '')
+        newData = newData.replace('4', '')
+        newData = newData.replace('5', '')
+        newData = newData.replace('6', '')
+        newData = newData.replace('7', '')
+        newData = newData.replace('8', '')
+        dns = newData.replace('9', '')
+#        dns = newData.translate(None,"()123456789")
         dnsList = [date, time, str(dns)]
         dnsDict[str(dns)] = dnsList
         iD += 1
