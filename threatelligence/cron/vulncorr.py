@@ -52,14 +52,17 @@ time1 = time.time()
 
 # i = datetime.datetime.now()
 # fHand = urllib.urlopen("http://isc.sans.edu/api/getmspatchday/%s-%s-%s?json" % (i.year, i.month, i.day))
-fHand = urllib.request.urlopen('http://isc.sans.edu/api/getmspatchday/2016-01-12?json')
+fHand = urllib.request.urlopen('http://isc.sans.edu/api/getmspatchday/2016-04-12?json')
+#fHand = open("vulnTest.txt")
 
+#data = fHand.read()
 data = fHand.read().decode('utf-8')
 js = json.loads(data)
 
 # The patchDict below will enable us to capture both 
 # affected system(s) as well as the severity of each threat
 patchDict = {}
+vulnDict = {}
 
 # Populate the patchDict variable with Key Value pairs 
 # representing the affected application and severity of 
@@ -70,7 +73,8 @@ for record in js["getmspatchday"]:
     severity = record["severity"]
 #    patchDict[str(affected)] = str(patchID), str(severity)
     patchDict[str(affected)] = str(severity)
-print("Patch Dict: ", patchDict)
+    vulnDict [str(patchID)]= affected, severity
+print("vuln Dict: ", vulnDict)
 
 # Make connection to internal asset database
 conn = sqlite3.connect('asset_base2.sqlite')
@@ -83,20 +87,22 @@ listOfThreats = []
 # Currently task of searching through dictionary looks only for exact matches against a
 # given asset within the database. No fuzzy searches are carried out. This is a possible
 # future improvement to the application.
-for patch in patchDict:
+for patch in vulnDict:
+    lookup = vulnDict[patch][0]
     try:
-        result = cur.execute("SELECT * FROM database_servers WHERE InstalledApplications='%s' UNION ALL "
-                         "SELECT * FROM email_servers WHERE InstalledApplications='%s' UNION ALL "
-                         "SELECT * FROM dev_servers WHERE InstalledApplications='%s' UNION ALL "
-                         "SELECT * FROM domain_controllers WHERE InstalledApplications='%s' UNION ALL "
-                         "SELECT * FROM exchange WHERE InstalledApplications='%s' UNION ALL "
-                         "SELECT * FROM file_transfer WHERE InstalledApplications='%s' UNION ALL "
-                         "SELECT * FROM huxley WHERE InstalledApplications='%s' UNION ALL "
-                         "SELECT * FROM pas WHERE InstalledApplications = '%s'"
-                         % (patch, patch, patch, patch, patch, patch, patch, patch))
+
+        result = cur.execute("SELECT * FROM database_servers WHERE InstalledApplications LIKE '%s' OR InstalledApplications LIKE 'Windows ' || '%s' UNION ALL "
+                         "SELECT * FROM email_servers WHERE InstalledApplications LIKE '%s' OR InstalledApplications LIKE 'Windows ' || '%s' UNION ALL "
+                         "SELECT * FROM dev_servers WHERE InstalledApplications LIKE '%s' OR InstalledApplications LIKE 'Windows ' || '%s' UNION ALL "
+                         "SELECT * FROM domain_controllers WHERE InstalledApplications LIKE '%s' OR InstalledApplications LIKE 'Windows ' || '%s' UNION ALL "
+                         "SELECT * FROM exchange WHERE InstalledApplications LIKE '%s' OR InstalledApplications LIKE 'Windows ' || '%s' UNION ALL "
+                         "SELECT * FROM file_transfer WHERE InstalledApplications LIKE '%s' OR InstalledApplications LIKE 'Windows ' || '%s' UNION ALL "
+                         "SELECT * FROM huxley WHERE InstalledApplications LIKE '%s' OR InstalledApplications LIKE 'Windows ' || '%s' UNION ALL "
+                         "SELECT * FROM pas WHERE InstalledApplications LIKE '%s' OR InstalledApplications LIKE 'Windows ' || '%s' "
+                         % (lookup, lookup, lookup, lookup, lookup, lookup, lookup, lookup, lookup, lookup, lookup, lookup, lookup, lookup, lookup, lookup))
         affectedSystem = []
         for system in result.fetchall():
-            affectedSystem = (patch, patchDict[patch],) + system
+            affectedSystem = (patchID, vulnDict[patchID],) + system
             listOfThreats.append(affectedSystem)
     except sqlite3.Error as e:
         print("An error occurred whilst querying the asset database:", e.args[0])
