@@ -1,39 +1,46 @@
-#Copyright 2016 Graeme James McGibbney
+# Copyright 2016 Graeme James McGibbney
 #
-#Licensed under the Apache License, Version 2.0 (the "License");
-#you may not use this file except in compliance with the License.
-#You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
 #    http://www.apache.org/licenses/LICENSE-2.0
 #
-#Unless required by applicable law or agreed to in writing, software
-#distributed under the License is distributed on an "AS IS" BASIS,
-#WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#See the License for the specific language governing permissions and
-#limitations under the License.
-'''
-dnscorr.py is a script designed to take a dns log file, parse for the date,
-time and request of the call and then store these values inside list dnsList
-These listed items are then stored inside dnsDict dictionary with a count
-variable used as the incremental key value. The script then connects to the
-dnscoll.sqlite database which holds data on domains that are known to be used to propogate malware and spyware.
-Using the parsed dns query from the dns log the script looks for
-a correlation between the dns element and the database.
-For a positive correlation the script then retrieves the
-date and time of the event values held within the dnsList stored within dnsDict.
-After all values within dnsList are retrieved the entire list
-value is placed within ElasticSearch.
-In order for this script to run, a local sqlite3 DB named
-'dnscoll.sqlite' must be within the same directory as this
-script.
-Finally, it is assumed that Elasticsearch is available at
-http://127.0.0.1:9200 such that affected systems and the
-severity of the threat can be written into records for display
-in Kibana.
-'''
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# dnscorr.py is a script designed to take a dns log file, parse for the date,
+# time and request of the call and then store these values inside list dnsList
+# These listed items are then stored inside dnsDict dictionary with a count
+# variable used as the incremental key value. The script then connects to the
+# dnscoll.sqlite database which holds data on domains that are known to be used to propogate malware and spyware.
+# Using the parsed dns query from the dns log the script looks for
+# a correlation between the dns element and the database.
+# For a positive correlation the script then retrieves the
+# date and time of the event values held within the dnsList stored within dnsDict.
+# After all values within dnsList are retrieved the entire list
+# value is placed within ElasticSearch.
+# In order for this script to run, a local sqlite3 DB named
+# 'dnscoll.sqlite' must be within the same directory as this
+# script.
+# Finally, it is assumed that Elasticsearch is available at
+# http://127.0.0.1:9200 such that affected systems and the
+# severity of the threat can be written into records for display
+# in Kibana.
+import sqlite3
+import time
+from datetime import timedelta
+import string
+from intelnotification import IntelNotify
+from elasticsearch import Elasticsearch
+from urllib.parse import urlparse
+
 def chunk2ip(chunk):
     ret=''
-    bracketmode=False
+    bracketmode = False
     for c in chunk:
         if bracketmode:
             if c != ')':
@@ -41,32 +48,20 @@ def chunk2ip(chunk):
             else:
                 if len(ret)>0:
                     ret += '.'
-                bracketmode=False
+                bracketmode = False
         else:
             if c != '(':
-                ret+=c
+                ret += c
             else:
-                bracketmode=True
-    return  ret[:len(ret)-1]
+                bracketmode = True
+    return ret[:len(ret)-1]
 
-print(chunk2ip('(3)www(6)amazon(2)co(2)uk(0)'))
-
-
-
-
-import sqlite3
-import time
-import string
-from intelnotification import IntelNotify
-from elasticsearch import Elasticsearch
-from  urllib.parse import urlparse
-
-time1 = time.time()
+startTime = time.time()
 #Create an array of possible DNS return codes to indicate whtether the DNS query has been successful or resulte in an error
 #https://support.opendns.com/entries/60827730-FAQ-What-are-common-DNS-return-or-response-codes-
 dnsResponseCodes = ['NOERROR','FORMERR','SERVFAIL','NXDOMAIN','NOTIMP','REFUSED','YXDOMAIN','XRRSET','NOTAUTH','NOTZONE']
 
-fhand = open('test.txt')
+fhand = open('dns10000.txt')
 
 # The dnsList will capture all parsed values from the txt file, these list values will then be stored in dnsDict
 
@@ -82,24 +77,11 @@ iD = 0
 for line in fhand:
     if dnsResponseCodes[0] in line:
         date = line[0:6]
-        time = line[7:15]
+        timeStr = line[7:15]
         line = line.rstrip()
-        data = line[181:]
-        data = data.strip(')(1234567890')
-        newData = data.replace('(', '.')
-        newData = newData.replace(')', '')
-        newData = newData.replace('0', '')
-        newData = newData.replace('1', '')
-        newData = newData.replace('2', '')
-        newData = newData.replace('3', '')
-        newData = newData.replace('4', '')
-        newData = newData.replace('5', '')
-        newData = newData.replace('6', '')
-        newData = newData.replace('7', '')
-        newData = newData.replace('8', '')
-        dns = newData.replace('9', '')
-#        dns = newData.translate(None,"()123456789")
-        dnsList = [date, time, str(dns)]
+        data = line[178:]
+        dns = (chunk2ip(data))
+        dnsList = [date, timeStr, str(dns)]
         dnsDict[str(dns)] = dnsList
         iD += 1
 
@@ -108,7 +90,7 @@ conn = sqlite3.connect('dnscoll.sqlite')
 cur = conn.cursor()
 dnsCorrellations = []
 count = 0
-for dnsListKey,dnsListValue in dnsDict.iteritems():
+for dnsListKey,dnsListValue in dnsDict.items():
     try:
         domain = urlparse(str('http://') + dnsListValue[2])
         result = cur.execute("SELECT * FROM collect WHERE malware_domain LIKE '%s'" % domain.netloc)
@@ -147,13 +129,14 @@ for dns in dnsCorrellations:
     bulk_data.append(op_dict)
     bulk_data.append(data_dict)
 
+endTime = time.time()
+
+# sends email notification
+email = IntelNotify()
+email.send_mail(len(dnsCorrellations),(endTime - startTime))
+
 # Let's create our index using the Python ES client.
 # By default we assume the aserver is running on http://localhost:9200
 es = Elasticsearch(hosts=['localhost:9200'])
 # bulk index the data
 res = es.bulk(index = 'threatelligence', body=bulk_data, refresh = True)
-time2 = time.time()
-
-# sends email notification
-email = IntelNotify()
-email.send_mail(len(dnsCorrellations),(str(time2 - time1)))
