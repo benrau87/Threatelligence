@@ -13,18 +13,19 @@
 # limitations under the License.
 import smtplib
 from string import Template
+from email.mime.text import MIMEText
 
 sender = 'threatelligence@gmail.com'
 
-receivers = ['g.j.mcgibbney@2015.ljmu.ac.uk']
+receivers = 'g.j.mcgibbney@2015.ljmu.ac.uk'
 
 
 class IntelNotify:
     def __init__(self):
         self.sender = 'threatelligence@gmail.com'
-        self.receivers = ['g.j.mcgibbney@2015.ljmu.ac.uk']
+        self.receivers = 'g.j.mcgibbney@2015.ljmu.ac.uk'
 
-    def send_mail(self, correlations='0', time=''):
+    def send_mail(self, correlations, time):
         """Simple convenience function which sends an email \
         from the configured sender to receivers.
         :param correlations: number representing the combined \
@@ -34,18 +35,26 @@ class IntelNotify:
             to execute and finish successfully.
         :type time: :mod:`string`
         """
-        message = Template("""" From: From ThreatIntel <test@gmail.com>
-            To: To InformationSecurity <g.j.mcgibbney@2015.ljmu.ac.uk>
-            Subject: SMTP email test
-            Body: $corr correlation's have been identified whilst running
-            one of our threat threat detection scripts.
 
-            Time taken to make identify correlations was $dur.
-            """)
-        message.substitute(corr=correlations, dur=time)
+        message = Template("""
+        You are receiving this email because you are subscribed to Assurant's Threat Intelligence notification service.
+
+        $corr threat correlation's have been identified whilst running one of our threat correlation scripts.
+
+        To view correlation(s) please visit the Kibana dashboard.
+
+        Time taken to make identify correlations was $dur seconds.
+
+        To unsubscribe from this service please contact $sender
+        """)
+        fullMessage = message.substitute(corr=correlations, dur=time, sender = sender)
+        msg = MIMEText(fullMessage)
+        msg['Subject'] = 'Assurant Threatelligence Update'
+        msg['From'] = sender
+        msg['To'] = receivers
         smtpObj = smtplib.SMTP('smtp.gmail.com', 587)
         smtpObj.ehlo()
         smtpObj.starttls()
-        smtpObj.login(sender, '')
-        smtpObj.sendmail(sender, receivers, message)
-        smtpObj.close()
+        smtpObj.login(sender, 'TPBNGr0c8Qxhx1Qj5yRd')
+        smtpObj.send_message(msg)
+        smtpObj.quit()

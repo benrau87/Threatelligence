@@ -39,6 +39,9 @@ import datetime
 from elasticsearch import Elasticsearch
 import time
 from intelnotification import IntelNotify
+import sys
+from datetime import timedelta
+import string
 
 # Obtaining the date enables dynamic date variable 
 # substitution whenever the script is run.
@@ -48,11 +51,11 @@ from intelnotification import IntelNotify
 # invoke it only on the second Tuesday of each month hence
 # guaranteeing the dates match perfectly.
 indexName = 'threatelligence'
-time1 = time.time()
+startTime = time.time()
 
 # i = datetime.datetime.now()
 # fHand = urllib.urlopen("http://isc.sans.edu/api/getmspatchday/%s-%s-%s?json" % (i.year, i.month, i.day))
-fHand = urllib.request.urlopen('http://isc.sans.edu/api/getmspatchday/2016-04-12?json')
+fHand = urllib.request.urlopen('http://isc.sans.edu/api/getmspatchday/2016-01-12?json')
 #fHand = open("vulnTest.txt")
 
 #data = fHand.read()
@@ -109,6 +112,8 @@ for patch in vulnDict:
 print("List of threats: ",listOfThreats)
 # Close connection to asset database
 conn.close()
+if not listOfThreats:
+    sys.exit
 
 # We'll now build up a Python dictionary of our data set in a format that the 
 # Python ES client can use. We are going to load the data by means of bulk 
@@ -141,8 +146,8 @@ for threat in listOfThreats:
 es = Elasticsearch(hosts=['localhost:9200'])
 # bulk index the data
 res = es.bulk(index = indexName, body = bulk_data, refresh = True)
-time2 = time.time()
 
+endTime = time.time()
 # sends email notification
 email = IntelNotify()
-email.send_mail(len(listOfThreats),(str(time2 - time1)))
+email.send_mail(len(listOfThreats),(endTime - startTime))

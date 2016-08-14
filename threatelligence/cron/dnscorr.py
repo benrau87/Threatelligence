@@ -131,12 +131,12 @@ for dns in dnsCorrellations:
 
 endTime = time.time()
 
-# sends email notification
-email = IntelNotify()
-email.send_mail(len(dnsCorrellations),(endTime - startTime))
-
 # Let's create our index using the Python ES client.
 # By default we assume the aserver is running on http://localhost:9200
 es = Elasticsearch(hosts=['localhost:9200'])
 # bulk index the data
 res = es.bulk(index = 'threatelligence', body=bulk_data, refresh = True)
+
+# sends email notification
+email = IntelNotify()
+email.send_mail(len(dnsCorrellations),(endTime - startTime))
