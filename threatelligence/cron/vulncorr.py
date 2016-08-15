@@ -77,7 +77,6 @@ for record in js["getmspatchday"]:
 #    patchDict[str(affected)] = str(patchID), str(severity)
     patchDict[str(affected)] = str(severity)
     vulnDict [str(patchID)]= affected, severity
-print("vuln Dict: ", vulnDict)
 
 # Make connection to internal asset database
 conn = sqlite3.connect('asset_base2.sqlite')
@@ -109,7 +108,7 @@ for patch in vulnDict:
             listOfThreats.append(affectedSystem)
     except sqlite3.Error as e:
         print("An error occurred whilst querying the asset database:", e.args[0])
-print("List of threats: ",listOfThreats)
+
 # Close connection to asset database
 conn.close()
 if not listOfThreats:
