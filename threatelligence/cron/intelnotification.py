@@ -16,14 +16,12 @@ from string import Template
 
 # Send an HTML email with an embedded image and a plain text message for
 # email clients that don't want to display the HTML.
-
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
 
 sender = 'threatelligence@gmail.com'
 
-#receivers = 'g.j.mcgibbney@2015.ljmu.ac.uk'
 receivers = 'g.j.mcgibbney@2015.ljmu.ac.uk'
 
 class IntelNotify:
@@ -31,7 +29,14 @@ class IntelNotify:
         self.sender = 'threatelligence@gmail.com'
         self.receivers = 'g.j.mcgibbney@2015.ljmu.ac.uk'
 
-    def send_mail(self, correlations, time):
+    def get_description(self, script):
+        return {
+                'dnscorr.py': 'Description for dnscorr.py goes here.',
+                'phishcorr.py': 'Description for phishcorr.py goes here.',
+                'vulncorr.py': 'Description for vulncorr.py goes here.',
+        }.get(script, 'There was an error generating a job description, please contact ' + sender) # script is default if the input not found
+
+    def send_mail(self, correlations, time, script):
         """Simple convenience function which sends an email \
         from the configured sender to receivers.
         :param correlations: number representing the combined \
@@ -40,17 +45,22 @@ class IntelNotify:
         :param time: the time it took for the calling program \
             to execute and finish successfully.
         :type time: :mod:`string`
+        :param script: the script which was invoked such that a \
+            detailed job description can be provided to correlation notifications.
+        :type time: :mod:`string`
         """
 
+        description = self.get_description(script)
         message = Template("""
         <br><img src="cid:image1" width="200"><br>
         <p>You are receiving this email because you are subscribed to <b>Assurant's Threat Intelligence notification service</b>.</p>
         <p><b>$corr threat correlation(s) have been identified</b> whilst running one of our threat correlation scripts.</p>
+        <p>Identified correlations relate to: <b>$desc</b>.</p>
         <p>To view correlation(s) please visit the Kibana dashboard.</p>
         <p>Time taken to identify correlations was <b>$dur seconds</b>.</p>
         <p><i>To unsubscribe from this service please contact $sender</i>.</p>
         """)
-        fullMessage = message.substitute(corr=correlations, dur=time, sender = sender)
+        fullMessage = message.substitute(corr=correlations, dur=time, sender=sender, desc=description)
         # Create the root message and fill in the from, to, and subject headers
         msgRoot = MIMEMultipart('related')
         msgRoot['Subject'] = 'Assurant Threatelligence Update'

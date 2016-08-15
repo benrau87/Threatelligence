@@ -33,6 +33,7 @@
 import sqlite3
 import time
 from datetime import timedelta
+import os
 import string
 from intelnotification import IntelNotify
 from elasticsearch import Elasticsearch
@@ -139,4 +140,4 @@ res = es.bulk(index = 'threatelligence', body=bulk_data, refresh = True)
 
 # sends email notification
 email = IntelNotify()
-email.send_mail(len(dnsCorrellations),(endTime - startTime))
+email.send_mail(len(dnsCorrellations),(endTime - startTime), os.path.basename(__file__))

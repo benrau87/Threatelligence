@@ -31,6 +31,7 @@ Once you get the connection variable back from the database
 import sqlite3
 from elasticsearch import Elasticsearch
 from datetime import timedelta
+import os
 import string
 import time
 from intelnotification import IntelNotify
@@ -108,4 +109,4 @@ res = es.bulk(index = 'threatelligence', body = bulk_data, refresh = True)
 endTime = time.time()
 # sends email notification
 email = IntelNotify()
-email.send_mail(len(hitsList),(endTime - startTime))
+email.send_mail(len(hitsList),(endTime - startTime), os.path.basename(__file__))

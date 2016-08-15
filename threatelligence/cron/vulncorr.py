@@ -39,6 +39,7 @@ import datetime
 from elasticsearch import Elasticsearch
 import time
 from intelnotification import IntelNotify
+import os
 import sys
 from datetime import timedelta
 import string
@@ -149,4 +150,4 @@ res = es.bulk(index = indexName, body = bulk_data, refresh = True)
 endTime = time.time()
 # sends email notification
 email = IntelNotify()
-email.send_mail(len(listOfThreats),(endTime - startTime))
+email.send_mail(len(listOfThreats), (endTime - startTime), os.path.basename(__file__))
