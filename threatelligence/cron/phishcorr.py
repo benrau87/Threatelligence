@@ -29,7 +29,13 @@ Once you get the connection variable back from the database
 
 '''
 import sqlite3
-from elasticsearch import Elasticsearch,helpers
+from elasticsearch import Elasticsearch
+from datetime import timedelta
+import string
+import time
+from intelnotification import IntelNotify
+
+startTime = time.time()
 
 # Connect to the phishcoll database to retrieve all details on the phish that is currently stores.
 # Store the phish within a list called phishList
@@ -43,45 +49,29 @@ try:
     result = cur.execute('''SELECT Url,Target FROM Phishing_Campaigns WHERE Target != "Other"''')
     count = 0
     for item in result.fetchall():
-        phishDict[count] = item
+        newList = [item[0], item[1]]
+        phishList.append(newList)
         count += 1
-# phishList.append(cur.fetchall())
 except sqlite3.Error as e:
     print("An error occurred whilst accessing phishcoll.sqlite database:", e.args[0])
 phishconn.close()
 
-print(phishDict)
-
-emailconn = sqlite3.connect('GMData.sqlite')
+emailconn = sqlite3.connect('email_base.sqlite')
 
 cur = emailconn.cursor()
 hitsList = []
-count = 0
 
-for phishAttempt in phishDict:
-    try:
-        cur.execute(
-            '''SELECT TimeEmailReceived, RecipientAddress,
-            SenderAddress FROM Email WHERE CONTAINS(EmailBodyText,'"%s" OR "%s"')''',
-
-        )
-    except:
-        print("error could not connect to database")
 for phishAttempt in phishList:
     try:
-        cur.execute (
-            '''SELECT MD.TimeReceived as [Time Email Received],
-            CR.CorrespondentAddress as [Recipient Address],
-            CR.CorrespondentName as [Recipient Name]
-            FROM MessageBodyDetails MBD WHERE CONTAINS(MBD.BodyText,'"%s" OR "%s"')''',
-            phishAttempt[count][0], phishAttempt[count][1])
-        for phishHit in sqlite3.fetchall():
-            combinedPhish = (phishAttempt[count][0], phishAttempt[count][1],) + phishHit
+        result = cur.execute(
+            '''SELECT TimeEmailReceived, RecipientAddress, SenderAddress FROM GMC
+            WHERE instr(EmailBody,"%s") > 0''' % (phishAttempt[0]))
+        for phishHit in result.fetchall():
+            combinedPhish = tuple(phishAttempt + list(phishHit))
             hitsList.append(combinedPhish)
-            count += 1
     except sqlite3.Error as e:
         print("An error occurred whilst accessing phishcoll.sqlite database:", e.args[0])
-sqlite3.close()
+emailconn.close()
 
 
 # We'll now build up a Python dictionary of our data set in a format that the
@@ -93,7 +83,7 @@ sqlite3.close()
 # for our data:
 
 bulk_data = []
-targetList = ['Recipient Address','Recipient Name','Target','Url','Time Email Received']
+targetList = ['Url','Target','Time Email Received', 'Recipient Address','Sender']
 for hit in hitsList:
     data_dict = {}
     count = 0
@@ -104,7 +94,6 @@ for hit in hitsList:
         "index": {
             "_index": 'threatelligence',
             "_type": 'PhishingAttacks',
-            #"_id": data_dict[ID_FIELD]
         }
     }
     bulk_data.append(op_dict)
@@ -115,3 +104,8 @@ for hit in hitsList:
 es = Elasticsearch(hosts=['localhost:9200'])
 # bulk index the data
 res = es.bulk(index = 'threatelligence', body = bulk_data, refresh = True)
+
+endTime = time.time()
+# sends email notification
+email = IntelNotify()
+email.send_mail(len(hitsList),(endTime - startTime))

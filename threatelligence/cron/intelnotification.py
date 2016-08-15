@@ -43,7 +43,7 @@ class IntelNotify:
 
         To view correlation(s) please visit the Kibana dashboard.
 
-        Time taken to make identify correlations was $dur seconds.
+        Time taken to identify correlations was $dur seconds.
 
         To unsubscribe from this service please contact $sender
         """)
