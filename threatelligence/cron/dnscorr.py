@@ -62,7 +62,7 @@ startTime = time.time()
 #https://support.opendns.com/entries/60827730-FAQ-What-are-common-DNS-return-or-response-codes-
 dnsResponseCodes = ['NOERROR','FORMERR','SERVFAIL','NXDOMAIN','NOTIMP','REFUSED','YXDOMAIN','XRRSET','NOTAUTH','NOTZONE']
 
-fhand = open('dns10000.txt')
+fhand = open('dns10000_180.txt')
 
 # The dnsList will capture all parsed values from the txt file, these list values will then be stored in dnsDict
 
@@ -130,7 +130,9 @@ for dns in dnsCorrellations:
     bulk_data.append(op_dict)
     bulk_data.append(data_dict)
 
-endTime = time.time()
+    endTime = time.time()
+    timeElapsed = endTime - startTime
+    print ("Time Taken: "),(timeElapsed)
 
 # Let's create our index using the Python ES client.
 # By default we assume the aserver is running on http://localhost:9200

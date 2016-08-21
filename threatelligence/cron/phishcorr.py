@@ -38,7 +38,7 @@ from intelnotification import IntelNotify
 
 startTime = time.time()
 
-# Connect to the phishcoll database to retrieve all details on the phish that is currently stores.
+# Connect to the phishcoll database to retrieve all details on the phish that it currently stores.
 # Store the phish within a list called phishList
 phishconn = sqlite3.connect('phishcoll.sqlite')
 
@@ -47,7 +47,7 @@ phishList = []
 phishDict = {}
 
 try:
-    result = cur.execute('''SELECT Url,Target FROM Phishing_Campaigns WHERE Target != "Other"''')
+    result = cur.execute('''SELECT Url,Target FROM Phishing_Campaigns''')
     count = 0
     for item in result.fetchall():
         newList = [item[0], item[1]]
@@ -99,6 +99,11 @@ for hit in hitsList:
     }
     bulk_data.append(op_dict)
     bulk_data.append(data_dict)
+
+endTime = time.time()
+timeElapsed = endTime - startTime
+print ("Time Taken: "),(timeElapsed)
+
 
 # Let's create our index using the Python ES client.
 # By default we assume the aserver is running on http://localhost:9200

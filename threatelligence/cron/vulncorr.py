@@ -105,7 +105,7 @@ for patch in vulnDict:
                          % (lookup, lookup, lookup, lookup, lookup, lookup, lookup, lookup, lookup, lookup, lookup, lookup, lookup, lookup, lookup, lookup))
         affectedSystem = []
         for system in result.fetchall():
-            affectedSystem = (patchID, vulnDict[patchID],) + system
+            affectedSystem = (patch, vulnDict[patch],) + system
             listOfThreats.append(affectedSystem)
     except sqlite3.Error as e:
         print("An error occurred whilst querying the asset database:", e.args[0])
