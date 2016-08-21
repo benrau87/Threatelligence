@@ -93,6 +93,6 @@ class IntelNotify:
         smtpObj = smtplib.SMTP('smtp.gmail.com', 587)
         smtpObj.ehlo()
         smtpObj.starttls()
-        smtpObj.login(sender, 'TPBNGr0c8Qxhx1Qj5yRd')
+        smtpObj.login(sender, '')
         smtpObj.sendmail(sender, receivers, msgRoot.as_string())
         smtpObj.quit()
